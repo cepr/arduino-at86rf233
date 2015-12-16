@@ -28,7 +28,8 @@
 #ifndef AT86RF2XX_H_
 #define AT86RF2XX_H_
 
-#include <Arduino.h>
+#include <mraa/gpio.h>
+#include <mraa/spi.h>
 #include <stdint.h>
 #include "ieee802154.h"
 #include "at86rf2xx-registers.h"
@@ -70,7 +71,7 @@ class AT86RF2XX
      * @return                  0 on success
      * @return                  <0 on error
      */
-    int init(int cs_pin, int int_pin, int sleep_pin, int reset_pin);
+    int init(int cs_pin, int int_pin, int sleep_pin, int reset_pin, int spi_bus);
 
     /**
      * @brief   Trigger a hardware reset and configure radio with default values
@@ -375,10 +376,11 @@ class AT86RF2XX
     void hardware_reset();
 
   private:
-    int cs_pin;                         /**< chip select pin */
-    int sleep_pin;                      /**< sleep pin */
-    int reset_pin;                      /**< reset pin */
-    int int_pin;                        /**< external interrupt pin */
+    mraa_gpio_context cs_pin;           /**< chip select pin */
+    mraa_gpio_context sleep_pin;        /**< sleep pin */
+    mraa_gpio_context reset_pin;        /**< reset pin */
+    mraa_gpio_context int_pin;          /**< external interrupt pin */
+    mraa_spi_context spi;               /**< SPI context */
     uint8_t state;                      /**< current state of the radio */
     uint8_t seq_nr;                     /**< sequence number to use next */
     uint8_t frame_len;                  /**< length of the current TX frame */

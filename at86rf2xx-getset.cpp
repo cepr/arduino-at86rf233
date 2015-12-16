@@ -23,6 +23,10 @@
 
 #include "at86rf2xx.h"
 
+#include <mraa/gpio.h>
+#define LOW 0
+#define HIGH 1
+
 #ifdef MODULE_AT86RF212B
 /* See: Table 9-15. Recommended Mapping of TX Power, Frequency Band, and
  * PHY_TX_PWR (register 0x05), AT86RF212B data sheet. */
@@ -420,7 +424,7 @@ void AT86RF2XX::set_state(uint8_t state_)
         /* Discard all IRQ flags, framebuffer is lost anyway */
         reg_read(AT86RF2XX_REG__IRQ_STATUS);
         /* Go to SLEEP mode from TRX_OFF */
-        digitalWrite(sleep_pin, HIGH);
+        mraa_gpio_write(sleep_pin, HIGH);
         state = state_;
     } else {
         _set_state(state_);
