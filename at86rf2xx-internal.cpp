@@ -30,25 +30,27 @@
 typedef unsigned char byte;
 #define LOW 0
 #define HIGH 1
+#include <assert.h>
 
 void AT86RF2XX::reg_write(const uint8_t addr,
                          const uint8_t value)
 {
     byte writeCommand = addr | AT86RF2XX_ACCESS_REG | AT86RF2XX_ACCESS_WRITE;
-    mraa_gpio_write(cs_pin, LOW);
-    mraa_spi_write(spi, writeCommand);
-    mraa_spi_write(spi, value);
-    mraa_gpio_write(cs_pin, HIGH);
+    assert(mraa_gpio_write(cs_pin, LOW) == MRAA_SUCCESS);
+    assert(mraa_spi_write(spi, writeCommand) != -1);
+    assert(mraa_spi_write(spi, value) != -1);
+    assert(mraa_gpio_write(cs_pin, HIGH) == MRAA_SUCCESS);
 }
 
 uint8_t AT86RF2XX::reg_read(const uint8_t addr)
 {
-    byte value;
+    int value;
     byte readCommand = addr | AT86RF2XX_ACCESS_REG | AT86RF2XX_ACCESS_READ;
-    mraa_gpio_write(cs_pin, LOW);
-    mraa_spi_write(spi, readCommand);
+    assert(mraa_gpio_write(cs_pin, LOW) == MRAA_SUCCESS);
+    assert(mraa_spi_write(spi, readCommand) == MRAA_SUCCESS);
     value = mraa_spi_write(spi, 0x00);
-    mraa_gpio_write(cs_pin, HIGH);
+    assert(value != -1);
+    assert(mraa_gpio_write(cs_pin, HIGH) == MRAA_SUCCESS);
 
     return (uint8_t)value;
 }
@@ -58,13 +60,15 @@ void AT86RF2XX::sram_read(const uint8_t offset,
                          const size_t len)
 {
     byte readCommand = AT86RF2XX_ACCESS_SRAM | AT86RF2XX_ACCESS_READ;
-    mraa_gpio_write(cs_pin, LOW);
-    mraa_spi_write(spi, readCommand);
-    mraa_spi_write(spi, (char)offset);
+    assert(mraa_gpio_write(cs_pin, LOW) == MRAA_SUCCESS);
+    assert(mraa_spi_write(spi, readCommand) != -1);
+    assert(mraa_spi_write(spi, (char)offset) != -1);
     for (int b=0; b<len; b++) {
-      data[b] = mraa_spi_write(spi, 0x00);
+      int d = mraa_spi_write(spi, 0x00);
+      assert(d != -1);
+      data[b] = d;
     }
-    mraa_gpio_write(cs_pin, HIGH);
+    assert(mraa_gpio_write(cs_pin, HIGH) == MRAA_SUCCESS);
 }
 
 void AT86RF2XX::sram_write(const uint8_t offset,
@@ -72,25 +76,27 @@ void AT86RF2XX::sram_write(const uint8_t offset,
                           const size_t len)
 {
     byte writeCommand = AT86RF2XX_ACCESS_SRAM | AT86RF2XX_ACCESS_WRITE;
-    mraa_gpio_write(cs_pin, LOW);
-    mraa_spi_write(spi, writeCommand);
-    mraa_spi_write(spi, (char)offset);
+    assert(mraa_gpio_write(cs_pin, LOW) == MRAA_SUCCESS);
+    assert(mraa_spi_write(spi, writeCommand) != -1);
+    assert(mraa_spi_write(spi, (char)offset) != -1);
     for (int b=0; b<len; b++) {
-      mraa_spi_write(spi, data[b]);
+      assert(mraa_spi_write(spi, data[b]) != -1);
     }
-    mraa_gpio_write(cs_pin, HIGH);
+    assert(mraa_gpio_write(cs_pin, HIGH) == MRAA_SUCCESS);
 }
 
 void AT86RF2XX::fb_read(uint8_t *data,
                        const size_t len)
 {
     byte readCommand = AT86RF2XX_ACCESS_FB | AT86RF2XX_ACCESS_READ;
-    mraa_gpio_write(cs_pin, LOW);
-    mraa_spi_write(spi, readCommand);
+    assert(mraa_gpio_write(cs_pin, LOW) == MRAA_SUCCESS);
+    assert(mraa_spi_write(spi, readCommand) != -1);
     for (int b=0; b<len; b++) {
-      data[b] = mraa_spi_write(spi, 0x00);
+      int d = mraa_spi_write(spi, 0x00);
+      assert(d != -1);
+      data[b] = d;
     }
-    mraa_gpio_write(cs_pin, HIGH);
+    assert(mraa_gpio_write(cs_pin, HIGH) == MRAA_SUCCESS);
 }
 
 uint8_t AT86RF2XX::get_status()
@@ -106,7 +112,7 @@ void AT86RF2XX::assert_awake()
 {
     if(get_status() == AT86RF2XX_STATE_SLEEP) {
         /* wake up and wait for transition to TRX_OFF */
-        mraa_gpio_write(sleep_pin, LOW);
+        assert(mraa_gpio_write(sleep_pin, LOW) == MRAA_SUCCESS);
         usleep(AT86RF2XX_WAKEUP_DELAY);
 
         /* update state */
@@ -122,9 +128,9 @@ void AT86RF2XX::hardware_reset()
 
     /* trigger hardware reset */
 
-    mraa_gpio_write(reset_pin, LOW);
+    assert(mraa_gpio_write(reset_pin, LOW) == MRAA_SUCCESS);
     usleep(AT86RF2XX_RESET_PULSE_WIDTH);
-    mraa_gpio_write(reset_pin, HIGH);
+    assert(mraa_gpio_write(reset_pin, HIGH) == MRAA_SUCCESS);
     usleep(AT86RF2XX_RESET_DELAY);
 }
 

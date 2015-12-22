@@ -35,6 +35,7 @@
 #define LOW 0
 #define HIGH 1
 typedef unsigned char byte;
+#include <assert.h>
 
 /*  Declare radio device as globally scoped struct  */
 AT86RF2XX at86rf2xx = AT86RF2XX();
@@ -56,36 +57,45 @@ int AT86RF2XX::init(int cs_pin_, int int_pin_, int sleep_pin_, int reset_pin_, i
 
     /* initialize device descriptor */
     cs_pin = mraa_gpio_init_raw(cs_pin_);
+    assert(cs_pin != NULL);
+
     int_pin = mraa_gpio_init_raw(int_pin_);
+    assert(int_pin != NULL);
+
     sleep_pin = mraa_gpio_init_raw(sleep_pin_);
+    assert(sleep_pin != NULL);
+
     reset_pin = mraa_gpio_init_raw(reset_pin_);
+    assert(reset_pin != NULL);
+
     idle_state = AT86RF2XX_STATE_TRX_OFF;
     state = AT86RF2XX_STATE_SLEEP;
 
     /* setup GPIOs */    
-    mraa_gpio_dir(reset_pin, MRAA_GPIO_OUT);
-    mraa_gpio_dir(sleep_pin, MRAA_GPIO_OUT);
-    mraa_gpio_dir(int_pin, MRAA_GPIO_IN);
-    mraa_gpio_dir(cs_pin, MRAA_GPIO_OUT);
+    assert(mraa_gpio_dir(reset_pin, MRAA_GPIO_OUT) == MRAA_SUCCESS);
+    assert(mraa_gpio_dir(sleep_pin, MRAA_GPIO_OUT) == MRAA_SUCCESS);
+    assert(mraa_gpio_dir(int_pin, MRAA_GPIO_IN) == MRAA_SUCCESS);
+    assert(mraa_gpio_dir(cs_pin, MRAA_GPIO_OUT) == MRAA_SUCCESS);
 
     /* initialise SPI */
     //  Set up SPI
     spi = mraa_spi_init_raw(spi_bus, cs_pin_);
+    assert(spi != NULL);
     //  Data is transmitted and received MSB first
-    mraa_spi_lsbmode(spi, 0);
+    assert(mraa_spi_lsbmode(spi, 0) == MRAA_SUCCESS);
     //  SPI interface will run at 1MHz
-    mraa_spi_frequency(spi, 1000000);
+    assert(mraa_spi_frequency(spi, 1000000) == MRAA_SUCCESS);
     //  Data is clocked on the rising edge and clock is low when inactive
-    mraa_spi_mode(spi, MRAA_SPI_MODE0);
+    assert(mraa_spi_mode(spi, MRAA_SPI_MODE0) == MRAA_SUCCESS);
 
     /*  wait for SPI to be ready  */
     delay(10);
 
     /*  initialize GPIOs */
-    mraa_gpio_write(sleep_pin, LOW);
-    mraa_gpio_write(reset_pin, HIGH);
-    mraa_gpio_write(cs_pin, HIGH);
-    mraa_gpio_isr(int_pin, MRAA_GPIO_EDGE_RISING, at86rf2xx_irq_handler, this);
+    assert(mraa_gpio_write(sleep_pin, LOW) == MRAA_SUCCESS);
+    assert(mraa_gpio_write(reset_pin, HIGH) == MRAA_SUCCESS);
+    assert(mraa_gpio_write(cs_pin, HIGH) == MRAA_SUCCESS);
+    assert(mraa_gpio_isr(int_pin, MRAA_GPIO_EDGE_RISING, at86rf2xx_irq_handler, this) == MRAA_SUCCESS);
 
     /* make sure device is not sleeping, so we can query part number */
     assert_awake();
